@@ -1,0 +1,20 @@
+---
+- name: Detect current Youtrack version
+  shell: grep -P "bundle.product.(version|build)" {{ yt_install_path }}/internal/conf/bundle_build.properties | cut -d"=" -f 2
+  register: yt_cur_version
+  changed_when: False
+
+- name: Set Youtrack current version variable
+  set_fact:
+    yt_cur_version: "{{ yt_cur_version.stdout_lines | join('.') }}"
+
+- debug:
+    msg: "Current Youtrack version: {{ yt_cur_version }}"
+
+- debug:
+    msg: "Current Youtrack version is less than suggested ({{ yt_new_version }}): {{ yt_cur_version is version(yt_new_version, 'lt') }}"
+
+- name: Updata Youtrack
+  import_tasks: youtrack_update.yml
+  when: yt_cur_version is version(yt_new_version, 'lt')
+

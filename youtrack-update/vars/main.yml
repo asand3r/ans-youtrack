@@ -1,0 +1,6 @@
+---
+yt_service_name: youtrack.service
+yt_install_path: /opt/youtrack
+yt_new_version: 2020.2.7179
+yt_download_url: "https://download.jetbrains.com/charisma/youtrack-{{ yt_new_version }}.zip"
+yt_download_url_chsum: "https://download.jetbrains.com/charisma/youtrack-{{ yt_new_version }}.zip.sha256"

@@ -1,0 +1,50 @@
+---
+- name: Stop Youtrack systemd unit
+  systemd:
+    name: "{{ yt_service_name }}"
+    state: stopped
+
+- name: Backup current youtrack installation
+  archive:
+    path: "{{ yt_install_path }}"
+    dest: "/opt/youtrack-{{ yt_cur_version}}.tar"
+    format: tar
+
+- name: Rename installed Youtrack catalog
+  shell: mv {{ yt_install_path }} {{ yt_install_path }}-{{ yt_cur_version }}
+
+- name: Unzip downloaded arhive
+  unarchive:
+    src: "{{ yt_download_url }}"
+    dest: "{{ yt_install_path | replace('youtrack','') }}"
+    remote_src: yes
+
+- name: Rename new Youtrack catalog
+  shell: mv {{ yt_install_path }}-{{ yt_new_version }} {{ yt_install_path }}
+
+- name: Copy data, conf and logs catalogs from old version to new one
+  copy:
+    src: "{{ yt_install_path }}-{{ yt_cur_version }}/{{ item }}"
+    dest: "{{ yt_install_path }}/"
+    force: yes
+    remote_src: yes
+  with_items:
+    - data
+    - conf
+    - logs
+
+- name: Configure Youtrack to skip Wizard on update
+  copy:
+    src: youtrack.jvmoptions
+    dest: "{{ yt_install_path }}/conf/youtrack.jvmoptions"
+
+- name: Delete old Youtrack directory
+  file:
+    path: "{{ yt_install_path }}-{{ yt_cur_version }}"
+    state: absent
+
+- name: Start Youtrack systemd service unit
+  systemd:
+    name: "{{ yt_service_name }}"
+    state: started
+
